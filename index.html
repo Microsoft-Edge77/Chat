@@ -103,12 +103,14 @@
 <div id="messages"></div>
 
 <input id="pseudo" placeholder="Choisis un pseudo">
-<input id="messageInput" placeholder="Écris un message...">
-<button onclick="sendMessage()">Envoyer</button>
+<button onclick="choosePseudo()">Valider le pseudo</button>
+
+<input id="messageInput" placeholder="Écris un message..." disabled>
+<button onclick="sendMessage()" id="sendBtn" disabled>Envoyer</button>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, onChildAdded, off, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   // 🔥 Configuration Firebase
   const firebaseConfig = {
@@ -125,14 +127,51 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Charger pseudo depuis localStorage
-  const pseudoInput = document.getElementById("pseudo");
-  if (localStorage.getItem("pseudo")) {
-    pseudoInput.value = localStorage.getItem("pseudo");
-  }
-
   let currentListener = null;
 
+  // Charger pseudo si déjà choisi
+  const pseudoInput = document.getElementById("pseudo");
+  const messageInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  if (localStorage.getItem("pseudo")) {
+    pseudoInput.value = localStorage.getItem("pseudo");
+    pseudoInput.disabled = true;
+    messageInput.disabled = false;
+    sendBtn.disabled = false;
+  }
+
+  // 🔵 Choisir un pseudo unique
+  window.choosePseudo = async function () {
+    const pseudo = pseudoInput.value.trim();
+
+    if (!pseudo) {
+      alert("Entre un pseudo.");
+      return;
+    }
+
+    const pseudoRef = ref(db, "pseudos/" + pseudo);
+    const snapshot = await get(pseudoRef);
+
+    if (snapshot.exists()) {
+      alert("Ce pseudo est déjà pris.");
+      return;
+    }
+
+    // Réserver le pseudo
+    await set(pseudoRef, true);
+
+    // Sauvegarder localement
+    localStorage.setItem("pseudo", pseudo);
+
+    pseudoInput.disabled = true;
+    messageInput.disabled = false;
+    sendBtn.disabled = false;
+
+    alert("Pseudo validé !");
+  };
+
+  // 🔵 Charger les messages du salon
   function loadMessages() {
     const salon = document.getElementById("salon").value;
     const messagesDiv = document.getElementById("messages");
@@ -154,24 +193,23 @@
 
   loadMessages();
 
-  window.sendMessage = function() {
-    const pseudo = pseudoInput.value.trim();
-    const text = document.getElementById("messageInput").value.trim();
+  // 🔵 Envoyer un message
+  window.sendMessage = function () {
+    const pseudo = localStorage.getItem("pseudo");
+    const text = messageInput.value.trim();
     const salon = document.getElementById("salon").value;
 
     if (!pseudo) {
-      alert("Choisis un pseudo avant d'envoyer un message.");
+      alert("Choisis un pseudo d'abord.");
       return;
     }
-
-    localStorage.setItem("pseudo", pseudo);
 
     if (!text) return;
 
     const messagesRef = ref(db, "salons/" + salon);
     push(messagesRef, { pseudo, text });
 
-    document.getElementById("messageInput").value = "";
+    messageInput.value = "";
   };
 </script>
 
