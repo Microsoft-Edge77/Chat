@@ -16,12 +16,16 @@
     h2 {
       text-align: center;
       color: #1e90ff;
+      font-size: 32px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
     }
 
     #topbar {
       display: flex;
       justify-content: space-between;
       margin-bottom: 10px;
+      font-size: 18px;
     }
 
     select {
@@ -85,7 +89,7 @@
 </head>
 <body>
 
-<h2>💬 Chat en ligne</h2>
+<h2>💬 ThinkTalk</h2>
 
 <div id="topbar">
   <span>Salon :</span>
@@ -106,7 +110,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, push, onChildAdded, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // 🔥 Ta configuration Firebase
+  // 🔥 Configuration Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
     authDomain: "chat-github-6abb5.firebaseapp.com",
